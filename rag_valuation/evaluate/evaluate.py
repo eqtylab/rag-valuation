@@ -62,7 +62,7 @@ Do not provide explanation, do not conversate, simply respond with the correct c
 def run_with_searcher(lines: list[dict], csv_path: str, embeddings_path: str):
     s = searcher.RagSearcher(csv_path=csv_path, embeddings_path=embeddings_path)
 
-    results = searcher.query("Your query here")
+    results = s.query("Your query here")
     print(results)
 
 
