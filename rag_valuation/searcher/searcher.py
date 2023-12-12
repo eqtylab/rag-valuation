@@ -22,9 +22,9 @@ class Searcher:
     def _prepare_searcher(self):
         self.embeddings = self.embeddings.to(device=torch.device('cpu'))
         normalized_embeddings = self.embeddings / np.linalg.norm(self.embeddings, axis=1)[:, np.newaxis]
-        self.searcher = scann.scann_ops_pybind.builder(normalized_embeddings, 10, "dot_product").tree(
-            num_leaves=2000, num_leaves_to_search=100, training_sample_size=250000).score_ah(
-            2, anisotropic_quantization_threshold=0.2).reorder(200).build()
+        self.searcher = scann.scann_ops_pybind.builder(normalized_embeddings, 50, "dot_product").tree(
+            num_leaves=360, num_leaves_to_search=36, training_sample_size=250000).score_ah(
+            2, anisotropic_quantization_threshold=0.2).reorder(150).build()
 
     def create_embeddings(self):
         self.embeddings = self.model.encode(self.text_list, convert_to_tensor=True)
@@ -33,7 +33,7 @@ class Searcher:
     def query(self, q: str):
         query_embedding = self.model.encode([q])[0]
         normalized_query = query_embedding / np.linalg.norm(query_embedding)
-        neighbors, distances = self.searcher.search(normalized_query, final_num_neighbors=10)
+        neighbors, distances = self.searcher.search(normalized_query, final_num_neighbors=50)
 
         return pd.DataFrame({
             'Distance': [distances[i] for i in range(len(neighbors))],
