@@ -6,7 +6,10 @@ import argparse
 
 from typing import Union
 
+
 from rag_valuation import utils
+from rag_valuation.logger import eval_logger
+from rag_valuation.scripts import generate_rag_contexts
 
 def parse_eval_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(formatter_class=argparse.RawTextHelpFormatter)
@@ -104,6 +107,36 @@ def parse_eval_args() -> argparse.Namespace:
         default="INFO",
         help="Log error when tasks are not registered.",
     )
+    parser.add_argument(   
+        "--generate_rag_contexts",
+        action="store_true",
+        default=False,
+        help="If True, generate RAG contexts for each task.",
+    )
+    parser.add_argument(
+        "--rag_csv_path",
+        type=str,
+        default=None,
+        help="Path to CSV containing RAG contexts. Must have column `chunk_text`",
+    )
+    parser.add_argument(
+        "--rag_embedding_model",
+        type=str,
+        default="BAAI/bge-large-en-v1.5",
+        help="RAG model to use for generating contexts.",
+    )
+    parser.add_argument(
+        "--rag_embeddings_path",
+        type=str,
+        default=None,
+        help="Path to (optional) pre-computed RAG embeddings, if not provided, will be computed in process.",
+    )
+    parser.add_argument(
+        "--rag_topk",
+        type=int,
+        default=100,
+        help="Number of retrieved candiates, to be paired N times with each datum the dataset (new_dataset_size = (N*dataset_size))",
+    )
     return parser.parse_args()
 
 
@@ -114,11 +147,12 @@ def cli_evaluate(args: Union[argparse.Namespace, None] = None) -> None:
 
     ALL_TASKS = utils.get_all_tasks()
 
-    eval_logger = utils.eval_logger
+    
     eval_logger.setLevel(getattr(logging, f"{args.verbosity}"))
     eval_logger.info(f"Verbosity set to {args.verbosity}")
     os.environ["TOKENIZERS_PARALLELISM"] = "false"
 
+    
 
     if args.limit:
         eval_logger.warning(
@@ -139,7 +173,14 @@ def cli_evaluate(args: Union[argparse.Namespace, None] = None) -> None:
             "Available Tasks:\n - {}".format(f"\n - ".join(sorted(ALL_TASKS)))
         )
         sys.exit()
+
+    if args.generate_rag_contexts:
+        eval_logger.info(f"Generating RAG contexts for {args.tasks}")
+
+        generate_rag_contexts.run(args)
+        sys.exit()
     else:
+        
         if os.path.isdir(args.tasks):
             import glob
 
