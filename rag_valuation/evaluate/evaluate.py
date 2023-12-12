@@ -42,7 +42,7 @@ def run(lines: list[dict]):
     for i in tqdm(range(len(lines)), desc="Generating Responses"):
         line = lines[i]
         # line is a string, but actually is a json
-        response = generate(line, model, tokenizer, chat_history=[], system_prompt=None)
+        response = generate(line, model, tokenizer, chat_history=[], system_prompt="You need to select the correct multiple-choice answer. Given the question and choices, respond with the correct choice. Only provide the letter/choice as your response. Do not provide any other text or explanation.")
 
         # save response to a new file
         with open("rag_valuation/data/climate_fever_rag_responses.jsonl", "a") as f:
@@ -59,7 +59,7 @@ def generate(
     tokenizer: AutoTokenizer,
     chat_history: list[tuple[str, str]],
     system_prompt: str,
-    max_new_tokens: int = 1024,
+    max_new_tokens: int = 115,
     temperature: float = 0.6,
     top_p: float = 0.9,
     top_k: int = 50,
@@ -72,7 +72,7 @@ def generate(
         conversation.extend([{"role": "user", "content": user}, {"role": "assistant", "content": assistant}])
 
     
-    conversation.append({"role": "user", "content": message['question'] + "\n" + "<only respond with the correct letter choice, and without explanation>"})
+    conversation.append({"role": "user", "content": message['question'] + "\n" + "<only respond with the correct letter choice>"})
 
     input_ids = tokenizer.apply_chat_template(conversation, return_tensors="pt")
     if input_ids.shape[1] > MAX_INPUT_TOKEN_LENGTH:
