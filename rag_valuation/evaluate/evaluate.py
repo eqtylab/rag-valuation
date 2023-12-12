@@ -68,7 +68,7 @@ def generate(
     for user, assistant in chat_history:
         conversation.extend([{"role": "user", "content": user}, {"role": "assistant", "content": assistant}])
 
-    print(message)
+    print(message["question"])
     conversation.append({"role": "user", "content": message['question'] + "\n" + "<only respond with the correct letter choice, and without explanation>"})
 
     input_ids = tokenizer.apply_chat_template(conversation, return_tensors="pt")
