@@ -93,10 +93,11 @@ Do not provide explanation, do not conversate, simply respond with the correct c
 
             for result in results.itertuples():
                 # Modify prompt to include result text
-                context = "Context: " + result.text + "\n"
-                line['question'] = context + line['question']
-
-                response = generate(line, model, tokenizer, chat_history=[], system_prompt=sys_prompt)
+                context = "Context: " + result.text + "\nBased on the context,"
+                new_line = {}
+                new_line['question'] = context + line['question']
+                
+                response = generate(new_line, model, tokenizer, chat_history=[], system_prompt=sys_prompt)
 
                 response_tuple = (i, result.index, response)
                 json_encoded_tuple = json.dumps(response_tuple)
