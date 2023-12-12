@@ -89,7 +89,7 @@ def generate(
         {"input_ids": input_ids},
         streamer=streamer,
         max_new_tokens=max_new_tokens,
-        do_sample=True,
+        do_sample=False,
         top_p=top_p,
         top_k=top_k,
         temperature=temperature,
