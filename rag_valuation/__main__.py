@@ -10,6 +10,7 @@ from typing import Union
 from rag_valuation import utils
 from rag_valuation.logger import eval_logger
 from rag_valuation.scripts import generate_rag_contexts
+from rag_valuation.evaluate import evaluate
 
 def parse_eval_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(formatter_class=argparse.RawTextHelpFormatter)
@@ -159,9 +160,6 @@ def cli_evaluate(args: Union[argparse.Namespace, None] = None) -> None:
             " --limit SHOULD ONLY BE USED FOR TESTING."
             "REAL METRICS SHOULD NOT BE COMPUTED USING LIMIT."
         )
-
-     
-
     if args.tasks is None:
         # error
         eval_logger.error(
@@ -180,40 +178,25 @@ def cli_evaluate(args: Union[argparse.Namespace, None] = None) -> None:
         generate_rag_contexts.run(args)
         sys.exit()
     else:
+        # todo: support multiple tasks
+        task_name = args.tasks
+        eval_logger.info(f"Selected Tasks: {task_name}")
+
+        task_rag_contexts_path = f"rag_valuation/data/{task_name}_rag_contexts.jsonl"
+        if not os.path.exists(task_rag_contexts_path):
+            eval_logger.error(
+                f"RAG contexts for task {task_name} not found. Please generate them first."
+            )
+            sys.exit()
         
-        if os.path.isdir(args.tasks):
-            import glob
+        # open the jsonl file, load lines into a list
+        with open(task_rag_contexts_path, "r") as f:
+            lines = f.readlines()
 
-            task_names = []
-            yaml_path = os.path.join(args.tasks, "*.yaml")
-            for yaml_file in glob.glob(yaml_path):
-                config = utils.load_yaml_config(yaml_file)
-                task_names.append(config)
-        else:
-            tasks_list = args.tasks.split(",")
-            task_names = utils.pattern_match(tasks_list, ALL_TASKS)
-            for task in [task for task in tasks_list if task not in task_names]:
-                if os.path.isfile(task):
-                    config = utils.load_yaml_config(task)
-                    task_names.append(config)
-            task_missing = [
-                task
-                for task in tasks_list
-                if task not in task_names and "*" not in task
-            ]  # we don't want errors if a wildcard ("*") task name was used
-
-            if task_missing:
-                missing = ", ".join(task_missing)
-                eval_logger.error(
-                    f"Tasks were not found: {missing}\n"
-                    f"{utils.SPACING}Try `lm-eval --tasks list` for list of available tasks",
-                )
-                raise ValueError(
-                    f"Tasks {missing} were not found. Try `lm-eval --tasks list` for list of available tasks."
-                )
+        evaluate.run(lines)
 
 
-    eval_logger.info(f"Selected Tasks: {task_names}")
+
 
 
 

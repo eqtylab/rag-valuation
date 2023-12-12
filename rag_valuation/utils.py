@@ -2,6 +2,10 @@ import os
 import yaml
 import re
 import importlib.util
+
+from omegaconf import OmegaConf
+
+
 from jinja2 import BaseLoader, Environment, StrictUndefined
 
 def regex_replace(string, pattern, repl, count: int = 0):
@@ -86,3 +90,17 @@ def load_yaml_config(yaml_path=None, yaml_config=None, yaml_dir=None):
         final_yaml_config.update(yaml_config)
         return final_yaml_config
     return yaml_config
+
+
+def simple_parse_args_string(args_string):
+    """
+    Parses something like
+        args1=val1,arg2=val2
+    Into a dictionary
+    """
+    args_string = args_string.strip()
+    if not args_string:
+        return {}
+    arg_list = args_string.split(",")
+    args_dict = OmegaConf.to_object(OmegaConf.from_dotlist(arg_list))
+    return args_dict

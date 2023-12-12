@@ -1,5 +1,6 @@
 import sys
 import ast
+import json
 import datasets
 # from datasets.utils import DownloadError
 
@@ -60,34 +61,52 @@ def run(args):
 
     eval_logger.info(f"Number of examples in test split: {len(dataset)}")
 
+    # create a new jsonl file for each task
+    # each line in the jsonl file should be a dictionary with the following keys:
+    # question, choices, correct_choice_index, correct_choice_text, correct_choice_letter, context
 
-    
+    file_name = f"rag_valuation/data/{task}_rag_contexts.jsonl"
+    eval_logger.info(f"Writing RAG contexts to {file_name}")
 
-    question_string = utils.apply_template(task_dict["doc_to_text"], dataset[0])
-    choices = ast.literal_eval(utils.apply_template(task_dict["doc_to_choice"], dataset[0]))
-    correct_choice_index = utils.apply_template(task_dict["doc_to_target"],  dataset[0])
+    with open(file_name, "w") as f:
+        # iterate through each example in the dataset
+        for example in dataset:
 
-    if correct_choice_index.isdigit():
-        correct_choice_index = ast.literal_eval(correct_choice_index)     
+            question_string = utils.apply_template(task_dict["doc_to_text"], example)
+            choices = ast.literal_eval(utils.apply_template(task_dict["doc_to_choice"], example))
+            correct_choice_index = utils.apply_template(task_dict["doc_to_target"],  example)
 
-    eval_logger.info(f"Question string: {question_string}")     
-    eval_logger.info(f"Choices: {choices}")
-    eval_logger.info(f"Correct choice index: {correct_choice_index}")
 
-    # we need to append choices to question string, adding (A), (B), etc. to each choice
-    # we dont need to add a newline between each choice, only a space
-    # we also need to add a newline between the question and the first choice
+            final_question_string = question_string + "\n"
 
-    final_question_string = question_string + "\n"
-    for i, choice in enumerate(choices):
-        final_question_string += f"({chr(i+65)}) {choice} "
-    
-    eval_logger.info(f"Question string:\n{final_question_string}")
+            for i, choice in enumerate(choices):
+                final_question_string += f"({chr(i+65)}) {choice} " 
 
-    
-    correct_choice_letter = chr(int(correct_choice_index)+65)
-    correct_choice_text = choices[correct_choice_index]
-    eval_logger.info(f"Correct choice: ({correct_choice_letter}) {correct_choice_text}")
+            if correct_choice_index.isdigit():
+                correct_choice_index = ast.literal_eval(correct_choice_index)    
+            
+            correct_choice_letter = chr(int(correct_choice_index)+65)
+            correct_choice_text = choices[correct_choice_index]
+
+            json_obj = {
+            "question": final_question_string,
+            "choices": choices,
+            "correct_choice_index": correct_choice_index,
+            "correct_choice_text": correct_choice_text,
+            "correct_choice_letter": correct_choice_letter
+            }
+
+            # Write the JSON object as a string in a single line
+            f.write(json.dumps(json_obj) + "\n")
+
+            # save as newline in jsonl file
+            # f.write(f"{{\"question\": \"{final_question_string}\", \"choices\": {choices}, \"correct_choice_index\": {correct_choice_index}, \"correct_choice_text\": \"{correct_choice_text}\", \"correct_choice_letter\": \"{correct_choice_letter}\"}}\n")
+
+
+
+        
+
+
     
     
 
