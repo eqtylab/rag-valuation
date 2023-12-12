@@ -79,11 +79,11 @@ def run_with_searcher(lines: list[dict], csv_path: str, embeddings_path: str):
             lines.append(json.loads(line))
 
     sys_prompt = """You are a test taking bot. You simply, and only respond with "(A) correct" or (B) misinformation". Do not provide any other text or explanation. 
-Select the multiple-choice option that is appropriate:
+Select the multiple-choice option that is appropriate. Do not explain or say anything like "Based on the context..." ... simply respond with the correct choice.
 Given the statement, it's Context, and choices, output the choice that best labels the statement. 
-...Using only the context, if the statement is correct (aligns with context), respond with: "(A) correct"...
+...Using only the context, if the statement is correct (aligns with context), respond with: "(A) correct"
 ...Using only the context, if the statement is misinformation (misaligns with context), respond with: "(B) misinformation".
-Do not provide explanation, do not conversate, simply respond with the correct choice (per the context)."""
+Do not provide explanation, do not conversate, simply respond with the correct choice (per the context) - Either (A) correct or (B) misinformation."""
 
 
     with open("rag_valuation/data/responses_with_search.txt", "w") as response_file:
@@ -128,9 +128,6 @@ def generate(
 
     
     conversation.append({"role": "user", "content": message['question']})
-
-    print()
-    print("Conversation: ", conversation)
 
     input_ids = tokenizer.apply_chat_template(conversation, return_tensors="pt")
     if input_ids.shape[1] > MAX_INPUT_TOKEN_LENGTH:
