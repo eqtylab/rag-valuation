@@ -45,8 +45,9 @@ def run(lines: list[dict]):
         response = generate(line, model, tokenizer, chat_history=[], system_prompt="You need to select the correct multiple-choice answer. Given the question and choices, respond with the correct choice. Only provide the letter/choice as your response. Do not provide any other text or explanation.")
 
         # save response to a new file
-        with open("rag_valuation/data/climate_fever_rag_responses.jsonl", "a") as f:
-            f.write(response + "\n")
+        with open("rag_valuation/data/climate_fever_rag_responses.txt", "a") as f:
+            single_line_response = response.replace("\n", " ")  # Replace newlines with spaces
+            f.write(single_line_response + "\n")
 
 
 
