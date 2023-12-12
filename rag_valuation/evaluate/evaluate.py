@@ -39,7 +39,6 @@ def run(lines: list[dict]):
     
     for i, line in enumerate(lines):
         # line is a string, but actually is a json
-        line = eval(line)
         response = generate(line, model, tokenizer, chat_history=[], system_prompt=None)
         print(response)
 
