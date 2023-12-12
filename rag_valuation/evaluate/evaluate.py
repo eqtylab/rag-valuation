@@ -148,10 +148,10 @@ def generate(
         streamer=streamer,
         max_new_tokens=max_new_tokens,
         do_sample=False,
-        top_p=top_p,
-        top_k=top_k,
-        temperature=temperature,
-        num_beams=1,
+        # top_p=top_p,
+        # top_k=top_k,
+        # temperature=temperature,
+        # num_beams=1,
         repetition_penalty=repetition_penalty,
     )
     t = Thread(target=model.generate, kwargs=generate_kwargs)
