@@ -5,6 +5,8 @@ from transformers import AutoModelForCausalLM, AutoTokenizer, TextIteratorStream
 from typing import Iterator
 from rag_valuation.logger import eval_logger
 from threading import Thread
+from tqdm import tqdm
+
 
 
 
@@ -37,18 +39,15 @@ def run(lines: list[dict]):
         for line in f:
             lines.append(json.loads(line))
     
-    for i, line in enumerate(lines):
+    for i in tqdm(range(len(lines)), desc="Generating Responses"):
+        line = lines[i]
         # line is a string, but actually is a json
         response = generate(line, model, tokenizer, chat_history=[], system_prompt=None)
-        print(response)
 
         # save response to a new file
         with open("rag_valuation/data/climate_fever_rag_responses.jsonl", "a") as f:
             f.write(response + "\n")
 
-        
-        if i > 10:
-            break
 
 
 
@@ -72,7 +71,7 @@ def generate(
     for user, assistant in chat_history:
         conversation.extend([{"role": "user", "content": user}, {"role": "assistant", "content": assistant}])
 
-    print(message["question"])
+    
     conversation.append({"role": "user", "content": message['question'] + "\n" + "<only respond with the correct letter choice, and without explanation>"})
 
     input_ids = tokenizer.apply_chat_template(conversation, return_tensors="pt")
