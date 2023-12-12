@@ -39,7 +39,7 @@ def run(lines: list[dict]):
         for line in f:
             lines.append(json.loads(line))
 
-    sys_prompt = 'Select the multiple-choice option that is appropriate -- Given the statement and choices, respond with the choice that best labels the statement. Do not provide any other text or explanation. If the statement is correct, respond with "A", if the statement is misinformation respond with "B"'
+    sys_prompt = 'Select the multiple-choice option that is appropriate -- Given the statement and choices, output the choice that best labels the statement. Do not provide any other text or explanation. If the statement is correct, respond with "A", if the statement is misinformation respond with "B". \n DO NOT EXPLAIN YOU CHOICE, ONLY RESPOND WITH THE LETTER YOU DETERMINE IS THE RIGHT LABEL: A or B.'
     
     for i in tqdm(range(len(lines)), desc="Generating Responses"):
         line = lines[i]
