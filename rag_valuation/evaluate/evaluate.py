@@ -60,10 +60,57 @@ Do not provide explanation, do not conversate, simply respond with the correct c
     eval_logger.info("Done generating responses.")
 
 def run_with_searcher(lines: list[dict], csv_path: str, embeddings_path: str):
+    if not torch.cuda.is_available():
+        #  error, only support gpu for now
+        raise NotImplementedError("Only support gpu for now.")
+        sys.exit()
+    if torch.cuda.is_available():
+        model_id = "meta-llama/Llama-2-7b-chat-hf"
+        model = AutoModelForCausalLM.from_pretrained(model_id, torch_dtype=torch.float16, device_map="auto")
+        tokenizer = AutoTokenizer.from_pretrained(model_id)
+        tokenizer.use_default_system_prompt = False
+
     s = searcher.RagSearcher(csv_path=csv_path, embeddings_path=embeddings_path)
 
     results = s.query("Your query here")
     print(results)
+
+    # example results
+    # pd.DataFrame({
+    #         'index': [neighbors[i] for i in range(len(neighbors))],
+    #         'distance': [distances[i] for i in range(len(neighbors))],
+    #         'text': [self.text_list[neighbors[i]] for i in range(len(neighbors))],
+    #         'source': [self.text_list_sources[neighbors[i]] for i in range(len(neighbors))]
+    #     })
+
+    sys_prompt = """You are a test-taking bot. Your task is to evaluate statements using only the provided context for each question. This context, which may or may not be entirely relevant, is essential for your evaluation. You must use this context to decide whether the statement is correct or misinformation. 
+
+Here are your instructions: 
+- You will be given a statement along with its context above the statement.
+- Determine the accuracy of the statement based solely on the given context.
+- Respond only with "(A) correct" if the statement seems accurate based on the context, or with "(B) misinformation" if the statement seems inaccurate.
+- Do not provide any additional text or explanation.
+- Do not engage in conversation; simply respond with your choice based on the context provided.
+
+Remember, your evaluation should rely exclusively on the provided context, regardless of its complete relevance to the statement."""
+
+
+    with open("rag_valuation/data/responses_with_search.txt", "w") as response_file:
+        for line in tqdm(lines, desc="Processing Questions"):
+            question_id = line['id']  # Assuming each line has an 'id' field for the question
+            results = s.query(line['query'])  # Assuming 'query' is the field for the question text
+
+            for result in results.itertuples():
+                # Modify prompt to include result text
+                context = "Context: " + result.text + "\n"
+                line['question'] = context + line['question']
+
+                response = generate(line, model, tokenizer, chat_history=[], system_prompt=sys_prompt)
+
+                response_tuple = {'question_id': question_id, 'result_index': result.index, 'response': response}
+                response_file.write(json.dumps(response_tuple) + "\n")
+
+    eval_logger.info("Done generating responses with searcher.")
 
 
   
@@ -88,6 +135,9 @@ def generate(
 
     
     conversation.append({"role": "user", "content": message['question']})
+
+    print()
+    print("Conversation: ", conversation)
 
     input_ids = tokenizer.apply_chat_template(conversation, return_tensors="pt")
     if input_ids.shape[1] > MAX_INPUT_TOKEN_LENGTH:

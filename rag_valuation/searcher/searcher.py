@@ -38,7 +38,8 @@ class RagSearcher:
         neighbors, distances = self.searcher.search(normalized_query, final_num_neighbors=50)
 
         return pd.DataFrame({
-            'Distance': [distances[i] for i in range(len(neighbors))],
-            'Text': [self.text_list[neighbors[i]] for i in range(len(neighbors))],
-            'Source': [self.text_list_sources[neighbors[i]] for i in range(len(neighbors))]
+            'index': [neighbors[i] for i in range(len(neighbors))],
+            'distance': [distances[i] for i in range(len(neighbors))],
+            'text': [self.text_list[neighbors[i]] for i in range(len(neighbors))],
+            'source': [self.text_list_sources[neighbors[i]] for i in range(len(neighbors))]
         })
