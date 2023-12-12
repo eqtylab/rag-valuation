@@ -20,7 +20,9 @@ class RagSearcher:
             self.embeddings = None
 
     def _prepare_searcher(self):
-        self.embeddings = self.embeddings.to(device=torch.device('cpu'))
+        # if embeddings were created on GPU, move to CPU
+        if self.embeddings.device.type == 'cuda':
+            self.embeddings = self.embeddings.to(device=torch.device('cpu'))
         normalized_embeddings = self.embeddings / np.linalg.norm(self.embeddings, axis=1)[:, np.newaxis]
         self.searcher = scann.scann_ops_pybind.builder(normalized_embeddings, 50, "dot_product").tree(
             num_leaves=360, num_leaves_to_search=36, training_sample_size=250000).score_ah(
