@@ -34,7 +34,8 @@ def run(lines: list[dict]):
         lines = f.readlines()
 
     for i, line in enumerate(lines):
-        line = line.strip()
+        # line = line.strip()
+        print(type(line))
         response = generate(line, model, tokenizer, chat_history=[], system_prompt=None)
         print(response)
 
