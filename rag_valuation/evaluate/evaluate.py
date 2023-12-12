@@ -2,7 +2,7 @@ import torch
 import os
 import json
 from transformers import AutoModelForCausalLM, AutoTokenizer, TextIteratorStreamer
-from transformers import logging
+
 
 
 from typing import Iterator
@@ -12,7 +12,11 @@ from tqdm import tqdm
 
 from rag_valuation.searcher import searcher
 
+from transformers import logging
+import warnings
+
 logging.set_verbosity_error()
+warnings.filterwarnings("ignore")
 
 
 MAX_MAX_NEW_TOKENS = 2048
@@ -148,10 +152,10 @@ def generate(
         streamer=streamer,
         max_new_tokens=max_new_tokens,
         do_sample=False,
-        top_p=None,
-        top_k=None,
-        temperature=None,
-        num_beams=None,
+        # top_p=top_p,
+        # top_k=top_k,
+        # temperature=temperature,
+        # num_beams=1,
         repetition_penalty=repetition_penalty,
     )
     t = Thread(target=model.generate, kwargs=generate_kwargs)
