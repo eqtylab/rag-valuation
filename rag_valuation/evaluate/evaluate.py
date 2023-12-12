@@ -2,6 +2,9 @@ import torch
 import os
 import json
 from transformers import AutoModelForCausalLM, AutoTokenizer, TextIteratorStreamer
+from transformers import logging
+
+
 from typing import Iterator
 from rag_valuation.logger import eval_logger
 from threading import Thread
@@ -9,6 +12,7 @@ from tqdm import tqdm
 
 from rag_valuation.searcher import searcher
 
+logging.set_verbosity_error()
 
 
 MAX_MAX_NEW_TOKENS = 2048
