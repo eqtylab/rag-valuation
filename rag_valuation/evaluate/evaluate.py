@@ -72,9 +72,6 @@ def run_with_searcher(lines: list[dict], csv_path: str, embeddings_path: str):
 
     s = searcher.RagSearcher(csv_path=csv_path, embeddings_path=embeddings_path)
 
-    results = s.query("Your query here")
-    print(results)
-
     # example results
     # pd.DataFrame({
     #         'index': [neighbors[i] for i in range(len(neighbors))],
@@ -96,8 +93,8 @@ Remember, your evaluation should rely exclusively on the provided context, regar
 
 
     with open("rag_valuation/data/responses_with_search.txt", "w") as response_file:
-        for line in tqdm(lines, desc="Processing Questions"):
-            question_id = line['id']  # Assuming each line has an 'id' field for the question
+        for i in tqdm(range(len(lines)), desc="Generating Responses"):
+            line = lines[i]
             results = s.query(line['query'])  # Assuming 'query' is the field for the question text
 
             for result in results.itertuples():
@@ -107,7 +104,7 @@ Remember, your evaluation should rely exclusively on the provided context, regar
 
                 response = generate(line, model, tokenizer, chat_history=[], system_prompt=sys_prompt)
 
-                response_tuple = {'question_id': question_id, 'result_index': result.index, 'response': response}
+                response_tuple = {'question_id': i, 'result_index': result.index, 'response': response}
                 response_file.write(json.dumps(response_tuple) + "\n")
 
     eval_logger.info("Done generating responses with searcher.")
