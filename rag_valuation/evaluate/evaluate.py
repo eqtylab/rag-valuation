@@ -1,5 +1,6 @@
 import torch
 import os
+import json
 from transformers import AutoModelForCausalLM, AutoTokenizer, TextIteratorStreamer
 from typing import Iterator
 from rag_valuation.logger import eval_logger
@@ -30,12 +31,15 @@ def run(lines: list[dict]):
     #  ... save the response in a new file
 
     file_path = "rag_valuation/data/climate_fever_rag_contexts.jsonl"
-    with open(file_path, "r") as f:
-        lines = f.readlines()
+    lines = []
 
+    with open(file_path, "r") as f:
+        for line in f:
+            lines.append(json.loads(line))
+    
     for i, line in enumerate(lines):
-        # line = line.strip()
-        print(type(line))
+        # line is a string, but actually is a json
+        line = eval(line)
         response = generate(line, model, tokenizer, chat_history=[], system_prompt=None)
         print(response)
 
