@@ -4,7 +4,7 @@ output_type: multiple_choice
 training_split: test
 validation_split: test
 test_split: test
-doc_to_text: "Is the following statement on climate correct or misinformation:\n{{claim}}\nAnswer:"
+doc_to_text: "Using the context as your primary source, is the following statement on climate correct or misinformation:\n{{claim}}\n"
 doc_to_target: "{{claim_label}}" # will be 0 or 1
-doc_to_choice: "{{['true_statement', 'false_statement']}}" # 0, 1
+doc_to_choice: "{{['correct', 'misinformation']}}" # 0, 1
 process_docs: !function utils.filter_binary # the dataset is rep'd as : 0 - true, 1 - false, N - other labels we don't want

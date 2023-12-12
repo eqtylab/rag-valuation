@@ -1,4 +1,5 @@
 import sys
+import ast
 import datasets
 # from datasets.utils import DownloadError
 
@@ -57,11 +58,38 @@ def run(args):
     if task_dict["process_docs"] is not None:
         dataset = task_dict["process_docs"](dataset['test'])
 
-
-
-    # print available splits
-    
     eval_logger.info(f"Number of examples in test split: {len(dataset)}")
+
+
+    
+
+    question_string = utils.apply_template(task_dict["doc_to_text"], dataset[0])
+    choices = ast.literal_eval(utils.apply_template(task_dict["doc_to_choice"], dataset[0]))
+    correct_choice_index = utils.apply_template(task_dict["doc_to_target"],  dataset[0])
+
+    if correct_choice_index.isdigit():
+        correct_choice_index = ast.literal_eval(correct_choice_index)     
+
+    eval_logger.info(f"Question string: {question_string}")     
+    eval_logger.info(f"Choices: {choices}")
+    eval_logger.info(f"Correct choice index: {correct_choice_index}")
+
+    # we need to append choices to question string, adding (A), (B), etc. to each choice
+    # we dont need to add a newline between each choice, only a space
+    # we also need to add a newline between the question and the first choice
+
+    final_question_string = question_string + "\n"
+    for i, choice in enumerate(choices):
+        final_question_string += f"({chr(i+65)}) {choice} "
+    
+    eval_logger.info(f"Question string:\n{final_question_string}")
+
+    
+    correct_choice_letter = chr(int(correct_choice_index)+65)
+    correct_choice_text = choices[correct_choice_index]
+    eval_logger.info(f"Correct choice: ({correct_choice_letter}) {correct_choice_text}")
+    
+    
 
 
 

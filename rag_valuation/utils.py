@@ -1,7 +1,21 @@
 import os
 import yaml
+import re
 import importlib.util
+from jinja2 import BaseLoader, Environment, StrictUndefined
 
+def regex_replace(string, pattern, repl, count: int = 0):
+    """Implements the `re.sub` function as a custom Jinja filter."""
+    return re.sub(pattern, repl, string, count=count)
+
+
+env = Environment(loader=BaseLoader, undefined=StrictUndefined)
+env.filters["regex_replace"] = regex_replace
+
+
+def apply_template(template: str, doc: dict) -> str:
+    rtemplate = env.from_string(template)
+    return rtemplate.render(**doc)
 
 def get_all_tasks():
     """
