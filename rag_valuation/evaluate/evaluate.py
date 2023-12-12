@@ -76,16 +76,12 @@ def run_with_searcher(lines: list[dict], csv_path: str, embeddings_path: str):
         for line in f:
             lines.append(json.loads(line))
 
-    sys_prompt = """You are a test-taking bot. Your task is to evaluate statements using only the provided context for each question. This context, which may or may not be entirely relevant, is essential for your evaluation. You must use this context to decide whether the statement is correct or misinformation. 
-
-Here are your instructions: 
-- You will be given a statement along with its context above the statement.
-- Determine the accuracy of the statement based solely on the given context.
-- Respond only with "(A) correct" if the statement seems accurate based on the context, or with "(B) misinformation" if the statement seems inaccurate.
-- Do not provide any additional text or explanation.
-- Do not engage in conversation; simply respond with your choice based on the context provided.
-
-Remember, your evaluation should rely exclusively on the provided context, regardless of its complete relevance to the statement."""
+    sys_prompt = """You are a test taking bot. You simply, and only respond with "(A) correct" or (B) misinformation". Do not provide any other text or explanation. 
+Select the multiple-choice option that is appropriate:
+Given the statement, it's Context, and choices, output the choice that best labels the statement. 
+...Using only the context, if the statement is correct (aligns with context), respond with: "(A) correct"...
+...Using only the context, if the statement is misinformation (misaligns with context), respond with: "(B) misinformation".
+Do not provide explanation, do not conversate, simply respond with the correct choice (per the context)."""
 
 
     with open("rag_valuation/data/responses_with_search.txt", "w") as response_file:
@@ -100,8 +96,9 @@ Remember, your evaluation should rely exclusively on the provided context, regar
 
                 response = generate(line, model, tokenizer, chat_history=[], system_prompt=sys_prompt)
 
-                response_tuple = {'question_id': i, 'result_index': result.index, 'response': response}
-                response_file.write(json.dumps(response_tuple) + "\n")
+                response_tuple = (i, result.index, response)
+                json_encoded_tuple = json.dumps(response_tuple)
+                response_file.write(json_encoded_tuple + "\n")
 
     eval_logger.info("Done generating responses with searcher.")
 
