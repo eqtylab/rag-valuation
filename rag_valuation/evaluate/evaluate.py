@@ -60,7 +60,7 @@ Do not provide explanation, do not conversate, simply respond with the correct c
     eval_logger.info("Done generating responses.")
 
 def run_with_searcher(lines: list[dict], csv_path: str, embeddings_path: str):
-    searcher = searcher.Searcher(csv_path=csv_path, embeddings_path=embeddings_path)
+    s = searcher.RagSearcher(csv_path=csv_path, embeddings_path=embeddings_path)
 
     results = searcher.query("Your query here")
     print(results)

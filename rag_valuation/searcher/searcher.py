@@ -5,7 +5,7 @@ import numpy as np
 from sentence_transformers import SentenceTransformer, util
 
 
-class Searcher:
+class RagSearcher:
     def __init__(self, csv_path, model_name="BAAI/bge-large-en-v1.5", embeddings_path=None):
         self.df = pd.read_csv(csv_path)
         self.text_list = self.df['chunk_text'].tolist()
