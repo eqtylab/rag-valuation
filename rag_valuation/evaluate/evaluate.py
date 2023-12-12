@@ -119,9 +119,9 @@ def generate(
     chat_history: list[tuple[str, str]],
     system_prompt: str,
     max_new_tokens: int = 115,
-    temperature: float = 0.6,
-    top_p: float = 0.9,
-    top_k: int = 50,
+    # temperature: float = 0.6,
+    # top_p: float = 0.9,
+    # top_k: int = 50,
     repetition_penalty: float = 1.2,
 ) -> Iterator[str]:
     conversation = []
@@ -148,10 +148,10 @@ def generate(
         streamer=streamer,
         max_new_tokens=max_new_tokens,
         do_sample=False,
-        # top_p=top_p,
-        # top_k=top_k,
-        # temperature=temperature,
-        # num_beams=1,
+        top_p=None,
+        top_k=None,
+        temperature=None,
+        num_beams=None,
         repetition_penalty=repetition_penalty,
     )
     t = Thread(target=model.generate, kwargs=generate_kwargs)
