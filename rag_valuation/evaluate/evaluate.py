@@ -7,6 +7,7 @@ from rag_valuation.logger import eval_logger
 from threading import Thread
 from tqdm import tqdm
 
+from rag_valuation.searcher import searcher
 
 
 
@@ -56,10 +57,16 @@ Do not provide explanation, do not conversate, simply respond with the correct c
             single_line_response = response.replace("\n", " ")  # Replace newlines with spaces
             f.write(single_line_response + "\n")
 
+    eval_logger.info("Done generating responses.")
+
+def run_with_searcher(lines: list[dict], csv_path: str, embeddings_path: str):
+    searcher = searcher.Searcher(csv_path=csv_path, embeddings_path=embeddings_path)
+
+    results = searcher.query("Your query here")
+    print(results)
 
 
-
-
+  
 
 def generate(
     message: str,

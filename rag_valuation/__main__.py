@@ -108,6 +108,12 @@ def parse_eval_args() -> argparse.Namespace:
         default="INFO",
         help="Log error when tasks are not registered.",
     )
+    parser.add_argument(
+        "--eval_with_searcher",
+        action="store_true",
+        default=False,
+        help="If True, evaluate with searcher/rag context results.",
+    )
     parser.add_argument(   
         "--generate_rag_contexts",
         action="store_true",
@@ -154,12 +160,6 @@ def cli_evaluate(args: Union[argparse.Namespace, None] = None) -> None:
     os.environ["TOKENIZERS_PARALLELISM"] = "false"
 
     
-
-    if args.limit:
-        eval_logger.warning(
-            " --limit SHOULD ONLY BE USED FOR TESTING."
-            "REAL METRICS SHOULD NOT BE COMPUTED USING LIMIT."
-        )
     if args.tasks is None:
         # error
         eval_logger.error(
@@ -193,7 +193,10 @@ def cli_evaluate(args: Union[argparse.Namespace, None] = None) -> None:
         with open(task_rag_contexts_path, "r") as f:
             lines = f.readlines()
 
-        evaluate.run(lines)
+        if args.eval_with_searcher:
+            evaluate.run_with_searcher(lines, args.rag_csv_path, args.rag_embeddings_path)
+        else:
+            evaluate.run(lines)
 
 
 
