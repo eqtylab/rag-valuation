@@ -67,7 +67,9 @@ def run_with_searcher(lines: list[dict], csv_path: str, embeddings_path: str):
         tokenizer = AutoTokenizer.from_pretrained(model_id)
         tokenizer.use_default_system_prompt = False
 
+    eval_logger.info("Loading searcher...")
     s = searcher.RagSearcher(csv_path=csv_path, embeddings_path=embeddings_path)
+    eval_logger.info("Done loading searcher.")
 
     file_path = "rag_valuation/data/climate_fever_rag_contexts.jsonl"
     lines = []
@@ -85,7 +87,7 @@ Do not provide explanation, do not conversate, simply respond with the correct c
 
 
     with open("rag_valuation/data/responses_with_search.txt", "w") as response_file:
-        for i in tqdm(range(len(lines)), desc="Generating Responses"):
+        for i in tqdm(range(len(lines)), desc="Generating Responses with searcher"):
             line = lines[i]
             results = s.query(line['question'])  # Assuming 'query' is the field for the question text
 
