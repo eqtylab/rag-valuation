@@ -30,9 +30,6 @@ def run(lines: list[dict]):
         tokenizer = AutoTokenizer.from_pretrained(model_id)
         tokenizer.use_default_system_prompt = False
 
-    #  for each question in data/climate_fever_rag_contexts.jsonl, generate a response
-    #  ... save the response in a new file
-
     file_path = "rag_valuation/data/climate_fever_rag_contexts.jsonl"
     lines = []
 
@@ -72,13 +69,12 @@ def run_with_searcher(lines: list[dict], csv_path: str, embeddings_path: str):
 
     s = searcher.RagSearcher(csv_path=csv_path, embeddings_path=embeddings_path)
 
-    # example results
-    # pd.DataFrame({
-    #         'index': [neighbors[i] for i in range(len(neighbors))],
-    #         'distance': [distances[i] for i in range(len(neighbors))],
-    #         'text': [self.text_list[neighbors[i]] for i in range(len(neighbors))],
-    #         'source': [self.text_list_sources[neighbors[i]] for i in range(len(neighbors))]
-    #     })
+    file_path = "rag_valuation/data/climate_fever_rag_contexts.jsonl"
+    lines = []
+
+    with open(file_path, "r") as f:
+        for line in f:
+            lines.append(json.loads(line))
 
     sys_prompt = """You are a test-taking bot. Your task is to evaluate statements using only the provided context for each question. This context, which may or may not be entirely relevant, is essential for your evaluation. You must use this context to decide whether the statement is correct or misinformation. 
 
@@ -95,7 +91,7 @@ Remember, your evaluation should rely exclusively on the provided context, regar
     with open("rag_valuation/data/responses_with_search.txt", "w") as response_file:
         for i in tqdm(range(len(lines)), desc="Generating Responses"):
             line = lines[i]
-            results = s.query(line['query'])  # Assuming 'query' is the field for the question text
+            results = s.query(line['question'])  # Assuming 'query' is the field for the question text
 
             for result in results.itertuples():
                 # Modify prompt to include result text
