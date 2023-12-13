@@ -9,7 +9,7 @@ from typing import Union
 
 from rag_valuation import utils
 from rag_valuation.logger import eval_logger
-from rag_valuation.scripts import generate_rag_contexts
+from rag_valuation.scripts import generate_question_contexts
 from rag_valuation.generate import generate
 from rag_valuation.grading import grading
 
@@ -91,10 +91,10 @@ def cli_evaluate(args: Union[argparse.Namespace, None] = None) -> None:
         )
         sys.exit()
 
-    if args.generate_rag_contexts:
+    if args.generate_question_contexts:
         eval_logger.info(f"Generating RAG contexts for {args.tasks}")
 
-        generate_rag_contexts.run(args)
+        generate_question_contexts.run(args)
         sys.exit()
     elif args.grade_responses:
         eval_logger.info(f"Grading responses for {args.tasks}")
