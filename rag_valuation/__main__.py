@@ -10,7 +10,7 @@ from typing import Union
 from rag_valuation import utils
 from rag_valuation.logger import eval_logger
 from rag_valuation.scripts import generate_rag_contexts
-from rag_valuation.evaluate import evaluate
+from rag_valuation.generate import generate
 
 def parse_eval_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(formatter_class=argparse.RawTextHelpFormatter)
@@ -20,105 +20,17 @@ def parse_eval_args() -> argparse.Namespace:
         default=None,
         help="To get full list of tasks, use the command lm-eval --tasks list",
     )
-    parser.add_argument(
-        "--model_args",
-        default="",
-        help="String arguments for model, e.g. `pretrained=EleutherAI/pythia-160m,dtype=float32`",
-    )
-    parser.add_argument(
-        "--num_fewshot",
-        type=int,
-        default=None,
-        help="Number of examples in few-shot context",
-    )
-    parser.add_argument("--batch_size", type=str, default=1)
-    parser.add_argument(
-        "--max_batch_size",
-        type=int,
-        default=None,
-        help="Maximal batch size to try with --batch_size auto",
-    )
-    parser.add_argument(
-        "--device",
-        type=str,
-        default=None,
-        help="Device to use (e.g. cuda, cuda:0, cpu)",
-    )
-    parser.add_argument(
-        "--output_path",
-        default=None,
-        type=str,
-        metavar="= [dir/file.jsonl] [DIR]",
-        help="The path to the output file where the result metrics will be saved. If the path is a directory and log_samples is true, the results will be saved in the directory. Else the parent directory will be used.",
-    )
-    parser.add_argument(
-        "--limit",
-        type=float,
-        default=None,
-        help="Limit the number of examples per task. "
-        "If <1, limit is a percentage of the total number of examples.",
-    )
-    parser.add_argument(
-        "--use_cache",
-        type=str,
-        default=None,
-        help="A path to a sqlite db file for caching model responses. `None` if not caching.",
-    )
-    parser.add_argument("--decontamination_ngrams_path", default=None)  # TODO: not used
-    parser.add_argument(
-        "--check_integrity",
-        action="store_true",
-        help="Whether to run the relevant part of the test suite for the tasks",
-    )
-    parser.add_argument(
-        "--write_out",
-        action="store_true",
-        default=False,
-        help="Prints the prompt for the first few documents",
-    )
-    parser.add_argument(
-        "--log_samples",
-        action="store_true",
-        default=False,
-        help="If True, write out all model outputs and documents for per-sample measurement and post-hoc analysis",
-    )
-    parser.add_argument(
-        "--show_config",
-        action="store_true",
-        default=False,
-        help="If True, shows the the full config of all tasks at the end of the evaluation.",
-    )
-    parser.add_argument(
-        "--include_path",
-        type=str,
-        default=None,
-        help="Additional path to include if there are external tasks to include.",
-    )
-    parser.add_argument(
-        "--gen_kwargs",
-        default="",
-        help=(
-            "String arguments for model generation on greedy_until tasks,"
-            " e.g. `temperature=0,top_k=0,top_p=0`"
-        ),
-    )
-    parser.add_argument(
-        "--verbosity",
-        type=str,
-        default="INFO",
-        help="Log error when tasks are not registered.",
-    )
-    parser.add_argument(
-        "--eval_with_searcher",
-        action="store_true",
-        default=False,
-        help="If True, evaluate with searcher/rag context results.",
-    )
     parser.add_argument(   
-        "--generate_rag_contexts",
+        "--generate_question_contexts",
         action="store_true",
         default=False,
         help="If True, generate RAG contexts for each task.",
+    )
+    parser.add_argument(
+        "--respond_with_searcher",
+        action="store_true",
+        default=False,
+        help="If True, evaluate with searcher/rag context results.",
     )
     parser.add_argument(
         "--rag_csv_path",
@@ -143,6 +55,12 @@ def parse_eval_args() -> argparse.Namespace:
         type=int,
         default=100,
         help="Number of retrieved candiates, to be paired N times with each datum the dataset (new_dataset_size = (N*dataset_size))",
+    )
+    parser.add_argument(
+        "--grade_responses",
+        action="store_true",
+        default=False,
+        help="If True, grade responses for each task. - Requires that responses have been generated.",
     )
     return parser.parse_args()
 
@@ -177,6 +95,9 @@ def cli_evaluate(args: Union[argparse.Namespace, None] = None) -> None:
 
         generate_rag_contexts.run(args)
         sys.exit()
+    elif args.grade_responses:
+        eval_logger.info(f"Grading responses for {args.tasks}")
+
     else:
         # todo: support multiple tasks
         task_name = args.tasks
@@ -194,9 +115,9 @@ def cli_evaluate(args: Union[argparse.Namespace, None] = None) -> None:
             lines = f.readlines()
 
         if args.eval_with_searcher:
-            evaluate.run_with_searcher(lines, args.rag_csv_path, args.rag_embeddings_path)
+            generate.run_with_searcher(lines, args.rag_csv_path, args.rag_embeddings_path)
         else:
-            evaluate.run(lines)
+            generate.run(lines)
 
 
 
