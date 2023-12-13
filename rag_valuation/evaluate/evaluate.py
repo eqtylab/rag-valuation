@@ -38,7 +38,7 @@ def run(lines: list[dict]):
         tokenizer = AutoTokenizer.from_pretrained(model_id)
         tokenizer.use_default_system_prompt = False
 
-    file_path = "rag_valuation/data/climate_fever_rag_contexts.jsonl"
+    file_path = "rag_valuation/data/climate_fever_baseline_questions.jsonl"
     lines = []
 
     with open(file_path, "r") as f:
@@ -58,7 +58,7 @@ Do not provide explanation, do not conversate, simply respond with the correct c
         response = generate(line, model, tokenizer, chat_history=[], system_prompt=sys_prompt)
 
         # save response to a new file
-        with open("rag_valuation/data/climate_fever_rag_responses.txt", "a") as f:
+        with open("rag_valuation/data/climate_fever_baseline_responses.txt", "a") as f:
             single_line_response = response.replace("\n", " ")  # Replace newlines with spaces
             f.write(single_line_response + "\n")
 
@@ -79,7 +79,7 @@ def run_with_searcher(lines: list[dict], csv_path: str, embeddings_path: str):
     s = searcher.RagSearcher(csv_path=csv_path, embeddings_path=embeddings_path)
     eval_logger.info("Done loading searcher.")
 
-    file_path = "rag_valuation/data/climate_fever_rag_contexts.jsonl"
+    file_path = "rag_valuation/data/climate_fever_baseline_questions.jsonl"
     lines = []
 
     with open(file_path, "r") as f:
@@ -94,7 +94,7 @@ Given the statement, it's Context, and choices, output the choice that best labe
 Do not provide explanation, do not conversate, simply respond with the correct choice (per the context) - Either (A) correct or (B) misinformation."""
 
 
-    with open("rag_valuation/data/responses_with_search.txt", "w") as response_file:
+    with open("rag_valuation/data/climate_fever_rag_responses.txt", "w") as response_file:
         for i in tqdm(range(len(lines)), desc="Generating Responses with searcher"):
             line = lines[i]
             results = s.query(line['question'])  # Assuming 'query' is the field for the question text
