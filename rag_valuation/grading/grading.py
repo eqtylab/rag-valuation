@@ -78,10 +78,12 @@ def run_rag_grades(generated_answers, correct_answers, output_path):
     # Read the correct answers file and parse JSON lines
     correct_labels = {}
     with open(correct_answers, 'r') as f:
+        qid = 0
         for line in f:
             json_obj = json.loads(line)
             correct_label = f"({json_obj['correct_choice_letter']}) {json_obj['correct_choice_text']}"
-            correct_labels[json_obj['id']] = correct_label
+            correct_labels[qid] = correct_label
+            qid += 1
 
     # Load generated answers CSV into DataFrame
     df = pd.read_csv(generated_answers)
