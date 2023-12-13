@@ -74,9 +74,9 @@ def cli_evaluate(args: Union[argparse.Namespace, None] = None) -> None:
     ALL_TASKS = utils.get_all_tasks()
 
     
-    eval_logger.setLevel(getattr(logging, f"{args.verbosity}"))
-    eval_logger.info(f"Verbosity set to {args.verbosity}")
-    os.environ["TOKENIZERS_PARALLELISM"] = "false"
+    # eval_logger.setLevel(getattr(logging, f"{args.verbosity}"))
+    # eval_logger.info(f"Verbosity set to {args.verbosity}")
+
 
     
     if args.tasks is None:
