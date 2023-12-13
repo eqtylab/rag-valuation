@@ -134,5 +134,12 @@ def run_rag_grades(generated_answers, correct_answers, output_path):
     print(f"Total rag sources: {134312}")
     print(f"Total unused rag sources: {unused_count}")
 
+    # count number of unique ids in the dict
+    unique_ids = set()
+    for key in rag_grades:
+        unique_ids.add(key)
+
+    print(f"Total unique rag sources: {len(unique_ids)}")
+
 
     return rag_grades
