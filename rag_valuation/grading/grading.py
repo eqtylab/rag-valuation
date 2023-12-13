@@ -97,7 +97,9 @@ def run_rag_grades(generated_answers, correct_answers, output_path):
         rag_id = row['rag_id']
         response = row['response']
 
-        print(question_id)
+        # if question_id is nan, there was an error, skip this row
+        if pd.isna(question_id):
+            continue
 
         # Evaluate the response
         eval_result = evaluate_ai_response(correct_labels[question_id], response)
