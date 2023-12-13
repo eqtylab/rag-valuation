@@ -1,4 +1,6 @@
 import re
+import json
+import pandas as pd
 
 def evaluate_ai_response(correct_label, generated_label):
     """
@@ -28,7 +30,7 @@ def evaluate_ai_response(correct_label, generated_label):
 
     # If the generated label does not contain a valid answer format, return 'not valid'
     if not contains_valid_answer(generated_label):
-        return 'not valid'
+        return 'invalid'
 
     # Normalize the correct label and check if it is in the generated label
     correct_label_parts = normalize_label(correct_label)
@@ -37,24 +39,27 @@ def evaluate_ai_response(correct_label, generated_label):
     else:
         return 'incorrect'
 
-# Example usage
-responses = [
-    [105, None, " (A) correct"],
-    [106, None, " (B) misinformation"],
-    [107, None, "A. correct"],
-    [108, None, " B. misinformation"],
-    [109, None, "(A) correct"],
-    [110, None, " B misinformation"],
-    [111, None, "(B) misinformation"],
-    [112, None, "I'm just an AI, my purpose is to assist and provide accurate information..."],
-    [113, None, "(B) misinformation"],
-    [114, None, "(A) correct"],
-    [115, None, "(B) misinformation"],
-    [116, None, " B. misinformation"],
-]
+def process_csv(generated_answers, correct_labels):
+    # Load CSV into DataFrame
+    df = pd.read_csv(generated_answers)
 
-for response in responses:
-    id, _, generated_label = response
-    correct_label = "(B) misinformation" # Assuming the correct label for all responses is "(B) no"
-    result = evaluate_ai_response(correct_label, generated_label)
-    print(f"Response {id} is {result}")
+    # Apply the evaluation function to each row using corresponding correct label
+    df['eval'] = df.apply(lambda row: evaluate_ai_response(correct_labels[row.name], row['response']), axis=1)
+
+    return df
+
+def run(generated_answers, correct_answers, output_path):
+    # Read the correct answers file and parse JSON lines
+    correct_labels = []
+    with open(correct_answers, 'r') as f:
+        for line in f:
+            json_obj = json.loads(line)
+            correct_label = f"({json_obj['correct_choice_letter']}) {json_obj['correct_choice_text']}"
+            correct_labels.append(correct_label)
+
+    # Process the generated answers with the correct labels
+    processed_df = process_csv(generated_answers, correct_labels)
+
+    # Save the processed data to the output path
+    processed_df.to_csv(output_path, index=False)
+
