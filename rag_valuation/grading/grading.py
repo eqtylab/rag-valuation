@@ -97,6 +97,8 @@ def run_rag_grades(generated_answers, correct_answers, output_path):
         rag_id = row['rag_id']
         response = row['response']
 
+        print(question_id)
+
         # Evaluate the response
         eval_result = evaluate_ai_response(correct_labels[question_id], response)
 
