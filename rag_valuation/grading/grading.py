@@ -120,4 +120,19 @@ def run_rag_grades(generated_answers, correct_answers, output_path):
     with open(output_path, 'w') as f:
         json.dump(rag_grades, f, indent=4)
 
+    # print statistics
+
+    # in total, there was 134312 rag sources,
+    # indexed 0...134311
+    # not all of them may have been used, or graded in the dict
+    # do a count of how many keys there are in the dict
+    unused_count = 0
+    for i in range(134312):
+        if i not in rag_grades:
+            unused_count += 1
+
+    print(f"Total rag sources: {134312}")
+    print(f"Total unused rag sources: {unused_count}")
+
+
     return rag_grades

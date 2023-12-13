@@ -113,7 +113,7 @@ def cli_evaluate(args: Union[argparse.Namespace, None] = None) -> None:
         grading.run_rag_grades(
             f"rag_valuation/data/{args.tasks}_rag_responses.csv",
             f"rag_valuation/data/{args.tasks}_baseline_questions.jsonl",
-            f"rag_valuation/data/{args.tasks}_rag_responses_graded.csv",
+            f"rag_valuation/data/{args.tasks}_rag_responses_graded.json", # is a map of rag_id to grades
         )
     else:
         # todo: support multiple tasks
