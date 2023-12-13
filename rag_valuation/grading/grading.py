@@ -73,3 +73,45 @@ def run(generated_answers, correct_answers, output_path):
 
     return eval_stats
 
+
+def run_rag_grades(generated_answers, correct_answers, output_path):
+    # Read the correct answers file and parse JSON lines
+    correct_labels = {}
+    with open(correct_answers, 'r') as f:
+        for line in f:
+            json_obj = json.loads(line)
+            correct_label = f"({json_obj['correct_choice_letter']}) {json_obj['correct_choice_text']}"
+            correct_labels[json_obj['id']] = correct_label
+
+    # Load generated answers CSV into DataFrame
+    df = pd.read_csv(generated_answers)
+
+    # Initialize a dictionary to keep track of rag grades
+    rag_grades = {}
+
+    # Iterate through each row in the DataFrame
+    for index, row in df.iterrows():
+        question_id = row['question_id']
+        rag_id = row['rag_id']
+        response = row['response']
+
+        # Evaluate the response
+        eval_result = evaluate_ai_response(correct_labels[question_id], response)
+
+        # Update rag_grades dictionary
+        if rag_id not in rag_grades:
+            rag_grades[rag_id] = {'overall_correct': 0, 'questions_correct': [],
+                                  'overall_incorrect': 0, 'questions_incorrect': []}
+
+        if eval_result == 'correct':
+            rag_grades[rag_id]['overall_correct'] += 1
+            rag_grades[rag_id]['questions_correct'].append(question_id)
+        elif eval_result == 'incorrect':
+            rag_grades[rag_id]['overall_incorrect'] += 1
+            rag_grades[rag_id]['questions_incorrect'].append(question_id)
+
+    # Save the rag_grades dictionary to the output path
+    with open(output_path, 'w') as f:
+        json.dump(rag_grades, f, indent=4)
+
+    return rag_grades

@@ -63,6 +63,12 @@ def parse_eval_args() -> argparse.Namespace:
         default=False,
         help="If True, grade responses for each task. - Requires that responses have been generated.",
     )
+    parser.add_argument(
+        "--grade_rag_responses",
+        action="store_true",
+        default=False,
+        help="If True, grade responses for each task with RAG contexts. - Requires that responses have been generated.",
+    )
     return parser.parse_args()
 
 
@@ -93,19 +99,22 @@ def cli_evaluate(args: Union[argparse.Namespace, None] = None) -> None:
 
     if args.generate_question_contexts:
         eval_logger.info(f"Generating RAG contexts for {args.tasks}")
-
         generate_question_contexts.run(args)
         sys.exit()
     elif args.grade_responses:
         eval_logger.info(f"Grading responses for {args.tasks}")
-        # def run(generated_answers, correct_answers, output_path):
-
         grading.run(
             f"rag_valuation/data/{args.tasks}_baseline_responses.csv",
             f"rag_valuation/data/{args.tasks}_baseline_questions.jsonl",
             f"rag_valuation/data/{args.tasks}_baseline_responses_graded.csv",
         )
-
+    elif args.grade_rag_responses:
+        eval_logger.info(f"Grading responses for {args.tasks} with RAG contexts")
+        grading.run_rag_grades(
+            f"rag_valuation/data/{args.tasks}_rag_responses.csv",
+            f"rag_valuation/data/{args.tasks}_baseline_questions.jsonl",
+            f"rag_valuation/data/{args.tasks}_rag_responses_graded.csv",
+        )
     else:
         # todo: support multiple tasks
         task_name = args.tasks
