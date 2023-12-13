@@ -63,3 +63,13 @@ def run(generated_answers, correct_answers, output_path):
     # Save the processed data to the output path
     processed_df.to_csv(output_path, index=False)
 
+    eval_stats = processed_df['eval'].value_counts().to_dict()
+
+    # Log the statistics in a structured way
+    print("Evaluation Statistics:")
+    print(f"Correct: {eval_stats.get('correct', 0)}")
+    print(f"Incorrect: {eval_stats.get('incorrect', 0)}")
+    print(f"Invalid: {eval_stats.get('invalid', 0)}")
+
+    return eval_stats
+

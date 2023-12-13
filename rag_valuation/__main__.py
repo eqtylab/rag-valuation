@@ -11,6 +11,7 @@ from rag_valuation import utils
 from rag_valuation.logger import eval_logger
 from rag_valuation.scripts import generate_rag_contexts
 from rag_valuation.generate import generate
+from rag_valuation.grading import grading
 
 def parse_eval_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(formatter_class=argparse.RawTextHelpFormatter)
@@ -97,6 +98,13 @@ def cli_evaluate(args: Union[argparse.Namespace, None] = None) -> None:
         sys.exit()
     elif args.grade_responses:
         eval_logger.info(f"Grading responses for {args.tasks}")
+        # def run(generated_answers, correct_answers, output_path):
+
+        grading.run(
+            f"rag_valuation/data/{args.tasks}_baseline_responses.csv",
+            f"rag_valuation/data/{args.tasks}_baseline_questions.jsonl",
+            f"rag_valuation/data/{args.tasks}_baseline_responses_graded.csv",
+        )
 
     else:
         # todo: support multiple tasks
